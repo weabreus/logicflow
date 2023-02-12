@@ -9,7 +9,6 @@ async function getTasks(activeTab: string) {
     // @ts-ignore
     return data.filter((task) => task.assigned_status === false) as any[];
   } else if (activeTab === "Asignadas") {
-    
     return data.filter(
       // @ts-ignore
       (task) => task.assigned_status === true && task.task_status === false
@@ -23,26 +22,19 @@ async function getTasks(activeTab: string) {
   }
 }
 
-const DeliveriesList: React.FC<{ 
-  activeTab: string; 
-  setOrigin: React.Dispatch<React.SetStateAction<{lat: number; lng: number;}>>; 
-  setDestination: React.Dispatch<React.SetStateAction<{lat: number; lng: number;}>>;
-  setLoadDirections:  React.Dispatch<React.SetStateAction<boolean>>;
-  mapRef: React.MutableRefObject<google.maps.Map | undefined>;
-  setDirections: React.Dispatch<React.SetStateAction<google.maps.DirectionsResult | undefined>>;
-  currentLocation: google.maps.LatLngLiteral;
-}> = ({ 
-    activeTab, 
-    setOrigin, 
-    setDestination, 
-    setLoadDirections,
-    mapRef,
-    setDirections,
-    currentLocation
-  }) => {
-  
-  const [tasks, setTasks] = useState([]);
+type LatLngLiteral = google.maps.LatLngLiteral;
 
+const DeliveriesList: React.FC<{
+  activeTab: string;
+  mapRef: React.MutableRefObject<google.maps.Map | null>;
+  rendererRef: React.MutableRefObject<google.maps.DirectionsRenderer | undefined>;
+  setDirections: React.Dispatch<
+    React.SetStateAction<google.maps.DirectionsResult | undefined>
+  >;
+  currentLocation: google.maps.LatLngLiteral;
+  fetchDirections: (origin: LatLngLiteral, destination: LatLngLiteral) => void;
+}> = ({ activeTab, mapRef, rendererRef, setDirections, currentLocation, fetchDirections }) => {
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
     async function tasks() {
@@ -59,8 +51,7 @@ const DeliveriesList: React.FC<{
         <ul role="list" className="relative z-0 divide-y divide-gray-200">
           {tasks.map((task) => (
             // @ts-ignore
-            <li key={task.id} 
-            >
+            <li key={task.id}>
               {/* @ts-ignore */}
               <div className="relative flex items-center space-x-3 px-6 py-5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 hover:bg-gray-50">
                 {/* @ts-ignore */}
@@ -74,13 +65,16 @@ const DeliveriesList: React.FC<{
                 </div>
                 <div className="min-w-0 flex-1">
                   {/* @ts-ignore */}
-                  <button className="focus:outline-none" onClick={() => { setOrigin({ lat: task.pickup_latitude, lng: task.pickup_longitude}); setDestination({ lat: task.delivery_latitude,lng: task.delivery_longitude}); setLoadDirections(true);
-              }}
-              onBlur={() => {
-                setLoadDirections(false)
-                setDirections(undefined)
-                mapRef.current?.panTo(currentLocation)
-                }}>
+                  <button
+                    className="focus:outline-none"
+                    // @ts-ignore
+                    onClick={() => {fetchDirections({lat: task.pickup_latitude, lng: task.pickup_longitude}, {lat: task.delivery_latitude, lng: task.delivery_longitude})}}
+                    onBlur={() => {
+                      setDirections(undefined);
+                      rendererRef.current?.setMap(null)
+                      mapRef.current?.panTo(currentLocation);
+                    }}
+                  >
                     {/* Extend touch target to entire panel */}
                     <span className="absolute inset-0" aria-hidden="true" />
                     <p className="text-sm font-medium text-gray-900">

@@ -7,7 +7,7 @@ const drivers = [
     phone: "(552) 4135208",
     device: "KUG",
     version: "4.6.0",
-    status: true,
+    status: "available",
     image: "http://dummyimage.com/188x100.png/5fa2dd/ffffff",
   },
   {
@@ -18,7 +18,7 @@ const drivers = [
     phone: "(753) 4042088",
     device: "DWR",
     version: "8.7.7",
-    status: true,
+    status: "available",
     image: "http://dummyimage.com/240x100.png/ff4444/ffffff",
   },
   {
@@ -29,7 +29,7 @@ const drivers = [
     phone: "(318) 4799651",
     device: "EKS",
     version: "0.38",
-    status: false,
+    status: "busy",
     image: "http://dummyimage.com/177x100.png/ff4444/ffffff",
   },
   {
@@ -40,7 +40,7 @@ const drivers = [
     phone: "(202) 2470616",
     device: "PEN",
     version: "0.7.4",
-    status: false,
+    status: "busy",
     image: "http://dummyimage.com/111x100.png/dddddd/000000",
   },
   {
@@ -51,7 +51,7 @@ const drivers = [
     phone: "(197) 3472832",
     device: "FOC",
     version: "1.8.8",
-    status: false,
+    status: "inactive",
     image: "http://dummyimage.com/149x100.png/5fa2dd/ffffff",
   },
   {
@@ -62,7 +62,7 @@ const drivers = [
     phone: "(259) 1249067",
     device: "LBU",
     version: "0.16",
-    status: true,
+    status: "inactive",
     image: "http://dummyimage.com/216x100.png/cc0000/ffffff",
   },
   {
@@ -73,7 +73,7 @@ const drivers = [
     phone: "(476) 4072312",
     device: "JAD",
     version: "5.5.7",
-    status: true,
+    status: "available",
     image: "http://dummyimage.com/189x100.png/5fa2dd/ffffff",
   },
   {
@@ -95,7 +95,7 @@ const drivers = [
     phone: "(182) 1118757",
     device: "KIC",
     version: "8.64",
-    status: true,
+    status: "busy",
     image: "http://dummyimage.com/109x100.png/dddddd/000000",
   },
   {
@@ -106,7 +106,7 @@ const drivers = [
     phone: "(618) 3841078",
     device: "PND",
     version: "6.4.1",
-    status: false,
+    status: "inactive",
     image: "http://dummyimage.com/113x100.png/ff4444/ffffff",
   },
 ];
