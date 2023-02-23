@@ -1,7 +1,5 @@
 import clientPromise from "../../../lib/mongodb";
 
-import drivers from "../../../data/driver";
-
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
