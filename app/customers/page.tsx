@@ -8,7 +8,7 @@ async function getCustomers() {
   const res = await fetch("/api/customers/customers");
   const data = await res.json();
 
-  return data as any[];
+  return data.data as any[];
 }
 
 function page() {

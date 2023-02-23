@@ -8,7 +8,7 @@ async function getDrivers() {
   const res = await fetch("/api/drivers/drivers");
   const data = await res.json();
 
-  return data as any[];
+  return data.data as any[];
 }
 
 function page() {

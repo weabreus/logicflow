@@ -6,15 +6,15 @@ async function getDrivers(activeTab: string) {
   
     if (activeTab === "Disponibles") {
       // @ts-ignore
-      return data.filter((driver) => driver.status === "available") as any[];
+      return data.data.filter((driver) => driver.status === "available") as any[];
     } else if (activeTab === "Ocupados") {
-      return data.filter(
+      return data.data.filter(
         // @ts-ignore
         (driver) => driver.status === "busy"
       );
     } else if (activeTab === "Inactivos") {
       // @ts-ignore
-      return data.filter(
+      return data.data.filter(
         // @ts-ignore
         (driver) => driver.status === "inactive"
       );
@@ -26,12 +26,12 @@ const DriversList: React.FC<{
     const [drivers, setDrivers] = useState([])
 
     useEffect(() => {
-        async function tasks() {
+        async function drivers() {
           const driversList = await getDrivers(activeTab);
           // @ts-ignore
           setDrivers(driversList);
         }
-        tasks();
+        drivers();
       }, [drivers, activeTab]);
   return (
     <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="Directory">
