@@ -6,15 +6,15 @@ async function getDrivers(activeTab: string) {
   
     if (activeTab === "Disponibles") {
       // @ts-ignore
-      return data.filter((driver) => driver.status === "available") as any[];
+      return data.data.filter((driver) => driver.status === "available") as any[];
     } else if (activeTab === "Ocupados") {
-      return data.filter(
+      return data.data.filter(
         // @ts-ignore
         (driver) => driver.status === "busy"
       );
     } else if (activeTab === "Inactivos") {
       // @ts-ignore
-      return data.filter(
+      return data.data.filter(
         // @ts-ignore
         (driver) => driver.status === "inactive"
       );

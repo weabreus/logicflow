@@ -7,7 +7,7 @@ async function getDeliveries(activeTab: string) {
 
   if (activeTab === "Pendientes") {
     // @ts-ignore
-    return data.data.filter((dalivery) => delivery.assigned_status === false) as any[];
+    return data.data.filter((delivery) => delivery.assigned_status === false) as any[];
   } else if (activeTab === "Asignadas") {
     return data.data.filter(
       // @ts-ignore
@@ -51,7 +51,7 @@ const DeliveriesList: React.FC<{
         <ul role="list" className="relative z-0 divide-y divide-gray-200">
           {deliveries.map((delivery) => (
             // @ts-ignore
-            <li key={task.id}>
+            <li key={delivery.id}>
               {/* @ts-ignore */}
               <div className="relative flex items-center space-x-3 px-6 py-5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 hover:bg-gray-50">
                 {/* @ts-ignore */}
