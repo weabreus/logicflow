@@ -1,23 +1,89 @@
-import React, { useRef, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { Fragment } from "react";
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
 import { MinusIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { classNames } from "../../helpers/helpers";
 import { Autocomplete } from "@react-google-maps/api";
 
+type Task = {
+  name?: string | undefined;
+  phone?: string | undefined;
+  email?: string | undefined;
+  reference?: string | undefined;
+  address?: string | undefined;
+  coordinates?: {
+    lat?: number | undefined;
+    lng?: number | undefined;
+  };
+  datetime?: Date | undefined;
+  image?: string | undefined;
+  status?: boolean 
+};
+
+type Delivery = {
+  type: "delivery" | "pickup" | "all" | undefined;
+  status: boolean;
+  assigned_status: boolean;
+  pickup?: Task;
+  delivery?: Task;
+};
+
 const DeliveriesForm: React.FC<{
   formOpen: boolean;
   setFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ formOpen, setFormOpen }) => {
+  activeTab: string;
+  getDeliveries: (activeTab: string) => Promise<any[]>;
+  setDeliveries: React.Dispatch<React.SetStateAction<any[]>>;
+
+}> = ({ formOpen, setFormOpen, activeTab, getDeliveries, setDeliveries }) => {
+
+  const [delivery, setDelivery] = useState<Delivery>({
+    type: undefined,
+    status: false,
+    assigned_status: false,
+    pickup: {
+      name: "",
+      phone: "",
+      email: "",
+      reference: "",
+      address: "",
+      coordinates: {
+        lat: undefined,
+        lng: undefined,
+      },
+      datetime: undefined,
+      image: "",
+      status: false
+    },
+    delivery: {
+      name: "",
+      phone: "",
+      email: "",
+      reference: "",
+      address: "",
+      coordinates: {
+        lat: undefined,
+        lng: undefined,
+      },
+      datetime: undefined,
+      image: "",
+      status: false
+    },
+  });
+
+  // Pickup inputs
+  const pickupLat = useRef(null);
+  const pickupLng = useRef(null);
+
+  // Delivery inputs
+  const deliveryLat = useRef(null);
+  const deliveryLng = useRef(null);
+
   const [pickupAutocomplete, setPickupAutocomplete] =
     useState<google.maps.places.Autocomplete | null>(null);
-  const pickupLatitude = useRef<HTMLInputElement | null>(null);
-  const pickupLongitude = useRef<HTMLInputElement | null>(null);
 
   const [deliveryAutocomplete, setDeliveryAutocomplete] =
     useState<google.maps.places.Autocomplete | null>(null);
-  const deliveryLatitude = useRef<HTMLInputElement | null>(null);
-  const deliveryLongitude = useRef<HTMLInputElement | null>(null);
 
   const onLoadPickupAutocomplete = (
     autoComplete: google.maps.places.Autocomplete
@@ -34,11 +100,17 @@ const DeliveriesForm: React.FC<{
     const lat = pickupAutocomplete?.getPlace().geometry?.location?.lat();
     const lng = pickupAutocomplete?.getPlace().geometry?.location?.lng();
 
-    if (pickupLatitude !== null && pickupLongitude !== null) {
+    if (pickupLat !== null && pickupLng !== null) {
       // @ts-ignore
-      pickupLatitude.current!.value = lat;
+      pickupLat.current!.value = lat;
+
       // @ts-ignore
-      pickupLongitude.current!.value = lng;
+      pickupLng.current!.value = lng;
+
+      setDelivery({
+        ...delivery,
+        pickup: { ...delivery.pickup, coordinates: { lat: lat, lng: lng }, address: pickupAutocomplete?.getPlace().formatted_address },
+      });
     }
   };
 
@@ -46,11 +118,36 @@ const DeliveriesForm: React.FC<{
     const lat = deliveryAutocomplete?.getPlace().geometry?.location?.lat();
     const lng = deliveryAutocomplete?.getPlace().geometry?.location?.lng();
 
-    if (deliveryLatitude !== null && deliveryLongitude !== null) {
+    if (deliveryLat !== null && deliveryLng !== null) {
       // @ts-ignore
-      deliveryLatitude.current!.value = lat;
+      deliveryLat.current!.value = lat;
       // @ts-ignore
-      deliveryLongitude.current!.value = lng;
+      deliveryLng.current!.value = lng;
+
+      setDelivery({
+        ...delivery,
+        delivery: { ...delivery.delivery, coordinates: { lat: lat, lng: lng }, address: deliveryAutocomplete?.getPlace().formatted_address },
+      });
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    // Send a POST request to the API route
+    const response = await fetch("/api/deliveries/deliveries/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(delivery),
+    });
+
+    if (response.ok) {
+      setFormOpen(false);
+      
+      const deliveriesList = await getDeliveries(activeTab);
+
+      setDeliveries(deliveriesList)
+
     }
   };
 
@@ -81,7 +178,10 @@ const DeliveriesForm: React.FC<{
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <Dialog.Panel className="pointer-events-auto w-screen max-w-[72rem]">
-                <form className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl">
+                <form
+                  className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl"
+                  onSubmit={(e) => handleSubmit(e)}
+                >
                   <div className="h-0 flex-1 overflow-y-auto">
                     <div className="bg-indigo-500 py-6 px-4 sm:px-6">
                       <div className="flex items-center justify-between">
@@ -161,6 +261,15 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      pickup: {
+                                                        ...delivery?.pickup,
+                                                        name: e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="text"
                                                   name="pickup-name"
                                                   id="pickup-name"
@@ -195,6 +304,15 @@ const DeliveriesForm: React.FC<{
                                                   </select>
                                                 </div>
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      pickup: {
+                                                        ...delivery.pickup,
+                                                        phone: e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="text"
                                                   name="pickup-phone"
                                                   id="pickup-phone"
@@ -212,6 +330,15 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      pickup: {
+                                                        ...delivery.pickup,
+                                                        email: e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="email"
                                                   name="pickup-email"
                                                   id="pickup-email"
@@ -228,6 +355,16 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      pickup: {
+                                                        ...delivery.pickup,
+                                                        reference:
+                                                          e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="text"
                                                   name="pickup-reference"
                                                   id="pickup-reference"
@@ -245,12 +382,24 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <Autocomplete
-                                                  onLoad={onLoadPickupAutocomplete}
+                                                  onLoad={
+                                                    onLoadPickupAutocomplete
+                                                  }
                                                   onPlaceChanged={
                                                     onPlaceChangedPickupAutocomplete
                                                   }
                                                 >
                                                   <input
+                                                    onChange={(e) =>
+                                                      setDelivery({
+                                                        ...delivery,
+                                                        pickup: {
+                                                          ...delivery.pickup,
+                                                          address:
+                                                            e.target.value,
+                                                        },
+                                                      })
+                                                    }
                                                     type="text"
                                                     name="pickup-address"
                                                     id="pickup-address"
@@ -269,7 +418,7 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
-                                                  ref={pickupLatitude}
+                                                  ref={pickupLat}
                                                   type="text"
                                                   name="pickup-latitude"
                                                   id="pickup-latitude"
@@ -287,7 +436,7 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
-                                                  ref={pickupLongitude}
+                                                  ref={pickupLng}
                                                   type="text"
                                                   name="pickup-longitude"
                                                   id="pickup-longitude"
@@ -305,6 +454,17 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      pickup: {
+                                                        ...delivery.pickup,
+                                                        datetime: new Date(
+                                                          e.target.value
+                                                        ),
+                                                      },
+                                                    })
+                                                  }
                                                   type="datetime-local"
                                                   name="pickup-datetime"
                                                   id="pickup-datetime"
@@ -374,6 +534,15 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      delivery: {
+                                                        ...delivery.delivery,
+                                                        name: e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="text"
                                                   name="delivery-name"
                                                   id="delivery-name"
@@ -408,6 +577,15 @@ const DeliveriesForm: React.FC<{
                                                   </select>
                                                 </div>
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      delivery: {
+                                                        ...delivery.delivery,
+                                                        phone: e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="text"
                                                   name="delivery-phone"
                                                   id="delivery-phone"
@@ -425,6 +603,15 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      delivery: {
+                                                        ...delivery.delivery,
+                                                        email: e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="email"
                                                   name="delivery-email"
                                                   id="delivery-email"
@@ -441,6 +628,16 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      delivery: {
+                                                        ...delivery.delivery,
+                                                        reference:
+                                                          e.target.value,
+                                                      },
+                                                    })
+                                                  }
                                                   type="text"
                                                   name="delivery-reference"
                                                   id="delivery-reference"
@@ -458,10 +655,24 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <Autocomplete
-                                                onLoad={onLoadDeliveryAutocomplete}
-                                                onPlaceChanged={onPlaceChangedDeliveryAutocomplete}
+                                                  onLoad={
+                                                    onLoadDeliveryAutocomplete
+                                                  }
+                                                  onPlaceChanged={
+                                                    onPlaceChangedDeliveryAutocomplete
+                                                  }
                                                 >
                                                   <input
+                                                    onChange={(e) =>
+                                                      setDelivery({
+                                                        ...delivery,
+                                                        delivery: {
+                                                          ...delivery.delivery,
+                                                          address:
+                                                            e.target.value,
+                                                        },
+                                                      })
+                                                    }
                                                     type="text"
                                                     name="delivery-address"
                                                     id="delivery-address"
@@ -480,7 +691,7 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
-                                                    ref={deliveryLatitude}
+                                                  ref={deliveryLat}
                                                   type="text"
                                                   name="delivery-latitude"
                                                   id="delivery-latitude"
@@ -498,15 +709,13 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
-                                                ref={deliveryLongitude}
+                                                  ref={deliveryLng}
                                                   type="text"
                                                   name="delivery-longitude"
                                                   id="delivery-longitude"
                                                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                                 />
                                               </div>
-                                              
-
                                             </div>
 
                                             <div className="col-span-2">
@@ -518,15 +727,23 @@ const DeliveriesForm: React.FC<{
                                               </label>
                                               <div className="mt-1">
                                                 <input
-                                                
+                                                  onChange={(e) =>
+                                                    setDelivery({
+                                                      ...delivery,
+                                                      delivery: {
+                                                        ...delivery.delivery,
+                                                        datetime: new Date(
+                                                          e.target.value
+                                                        ),
+                                                      },
+                                                    })
+                                                  }
                                                   type="datetime-local"
                                                   name="delivery-datetime"
                                                   id="delivery-datetime"
                                                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                                 />
                                               </div>
-                                              
-
                                             </div>
                                           </div>
                                         </div>

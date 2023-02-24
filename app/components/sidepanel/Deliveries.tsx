@@ -26,6 +26,29 @@ const Deliveries: React.FC<{
 }) => {
   const [activeTab, setActiveTab] = useState("Pendientes");
   const [formOpen, setFormOpen] = useState<boolean>(false);
+  const [deliveries, setDeliveries] = useState<any[]>([]);
+
+  async function getDeliveries(activeTab: string) {
+    const res = await fetch("/api/deliveries/deliveries");
+    const data = await res.json();
+  
+    if (activeTab === "Pendientes") {
+      // @ts-ignore
+      return data.data.filter((delivery) => delivery.assigned_status === false) as any[];
+    } else if (activeTab === "Asignadas") {
+      return data.data.filter(
+        // @ts-ignore
+        (delivery) => delivery.assigned_status === true && delivery.task_status === false
+      );
+    } else if (activeTab === "Completadas") {
+      // @ts-ignore
+      return data.data.filter(
+        // @ts-ignore
+        (delivery) => delivery.assigned_status === true && delivery.task_status === true
+      );
+    }
+  }
+
   const tabs = [
     {
       name: "Pendientes",
@@ -42,7 +65,7 @@ const Deliveries: React.FC<{
   ];
   return (
     <>
-      <DeliveriesForm formOpen={formOpen} setFormOpen={setFormOpen}/>
+      <DeliveriesForm formOpen={formOpen} setFormOpen={setFormOpen} activeTab={activeTab} getDeliveries={getDeliveries} setDeliveries={setDeliveries}/>
       <div className="flex h-full flex-col overflow-y-scroll bg-white pb-6 shadow-xl">
         <div className="bg-indigo-500 py-2 px-4 sm:px-6">
           <div className="flex items-center justify-between">
@@ -101,6 +124,9 @@ const Deliveries: React.FC<{
             setDirections={setDirections}
             currentLocation={currentLocation}
             fetchDirections={fetchDirections}
+            getDeliveries={getDeliveries}
+            setDeliveries={setDeliveries}
+            deliveries={deliveries}
           />
           {/* /End replace */}
         </div>

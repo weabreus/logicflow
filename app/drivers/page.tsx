@@ -16,7 +16,7 @@ function page() {
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
   const [selectedPeople, setSelectedPeople] = useState([]);
-  const [drivers, setDrivers] = useState([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
 
   useEffect(() => {
     async function drivers() {
@@ -37,9 +37,7 @@ function page() {
   }, [selectedPeople]);
 
   function toggleAll() {
-    {
-      /* @ts-ignore */
-    }
+    {/* @ts-ignore */}
     setSelectedPeople(checked || indeterminate ? [] : drivers);
     setChecked(!checked && !indeterminate);
     setIndeterminate(false);
@@ -47,9 +45,27 @@ function page() {
 
   const [open, setOpen] = useState(false);
 
+  const handleDelete = async (driverId: string) => {
+    const response = await fetch(`/api/drivers/${driverId}`, {
+      method: 'DELETE',
+      headers: { "Content-Type": "application/json" }
+    })
+
+
+    if (response.ok) {
+      
+      const driversList = await getDrivers()
+      // @ts-ignore
+      setDrivers(driversList)
+    }
+
+
+
+  }
+
   return (
     <>
-      <Form open={open} setOpen={setOpen} />
+      <Form open={open} setOpen={setOpen} setDrivers={setDrivers} getDrivers={getDrivers}/>
       <div className="py-4 px-4 sm:px-6 lg:px-8 w-full overflow-scroll">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
@@ -222,7 +238,7 @@ function page() {
                           {person.version}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {person.status ? "En Linea" : "Fuera de servicio"}
+                          {person.status === "available" ? "En Linea" : "Fuera de servicio"}
                         </td>
                         <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                           <a
@@ -232,6 +248,13 @@ function page() {
                             Editar
                             <span className="sr-only">, {person.name}</span>
                           </a>
+                          <button
+                            onClick={(e) => handleDelete(person._id)}
+                            className="ml-2 text-indigo-600 hover:text-indigo-900"
+                          >
+                            Borrar
+                            <span className="sr-only">, {person.name}</span>
+                          </button>
                         </td>
                       </tr>
                     ))}

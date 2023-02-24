@@ -1,27 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
-async function getDeliveries(activeTab: string) {
-  const res = await fetch("/api/deliveries/deliveries");
-  const data = await res.json();
-
-  if (activeTab === "Pendientes") {
-    // @ts-ignore
-    return data.data.filter((delivery) => delivery.assigned_status === false) as any[];
-  } else if (activeTab === "Asignadas") {
-    return data.data.filter(
-      // @ts-ignore
-      (delivery) => delivery.assigned_status === true && delivery.task_status === false
-    );
-  } else if (activeTab === "Completadas") {
-    // @ts-ignore
-    return data.data.filter(
-      // @ts-ignore
-      (delivery) => delivery.assigned_status === true && delivery.task_status === true
-    );
-  }
-}
-
 type LatLngLiteral = google.maps.LatLngLiteral;
 
 const DeliveriesList: React.FC<{
@@ -33,8 +12,11 @@ const DeliveriesList: React.FC<{
   >;
   currentLocation: google.maps.LatLngLiteral;
   fetchDirections: (origin: LatLngLiteral, destination: LatLngLiteral) => void;
-}> = ({ activeTab, mapRef, rendererRef, setDirections, currentLocation, fetchDirections }) => {
-  const [deliveries, setDeliveries] = useState([]);
+  getDeliveries: (activeTab: string) => Promise<any>;
+  setDeliveries: React.Dispatch<React.SetStateAction<any[]>>;
+  deliveries: any[];
+}> = ({ activeTab, mapRef, rendererRef, setDirections, currentLocation, fetchDirections, getDeliveries, deliveries, setDeliveries }) => {
+  
 
   useEffect(() => {
     async function deliveries() {
@@ -51,15 +33,15 @@ const DeliveriesList: React.FC<{
         <ul role="list" className="relative z-0 divide-y divide-gray-200">
           {deliveries.map((delivery) => (
             // @ts-ignore
-            <li key={delivery.id}>
+            <li key={delivery._id}>
               {/* @ts-ignore */}
-              <div className="relative flex items-center space-x-3 px-6 py-5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 hover:bg-gray-50">
+              <div className="relative flex items-center space-x-3 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 hover:bg-gray-50">
                 {/* @ts-ignore */}
                 <div className="flex-shrink-0">
                   <img
                     className="h-10 w-10 rounded-full"
                     //   @ts-ignore
-                    src={delivery.pickup_image}
+                    src={delivery.pickup.image}
                     alt=""
                   />
                 </div>
@@ -68,7 +50,7 @@ const DeliveriesList: React.FC<{
                   <button
                     className="focus:outline-none"
                     // @ts-ignore
-                    onClick={() => {fetchDirections({lat: delivery.pickup_latitude, lng: delivery.pickup_longitude}, {lat: delivery.delivery_latitude, lng: delivery.delivery_longitude})}}
+                    onClick={() => {fetchDirections({lat: delivery.pickup.coordinates.lat, lng: delivery.pickup.coordinates.lng}, {lat: delivery.delivery.coordinates.lat, lng: delivery.delivery.coordinates.lng})}}
                     onBlur={() => {
                       setDirections(undefined);
                       rendererRef.current?.setMap(null)
@@ -77,13 +59,13 @@ const DeliveriesList: React.FC<{
                   >
                     {/* Extend touch target to entire panel */}
                     <span className="absolute inset-0" aria-hidden="true" />
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 text-left">
                       {/* @ts-ignore */}
-                      {delivery.pickup_name}
+                      {delivery.pickup.name}
                     </p>
-                    <p className="truncate text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 text-left">
                       {/* @ts-ignore */}
-                      {delivery.pickup_address}
+                      {delivery.pickup.address}
                     </p>
                   </button>
                 </div>

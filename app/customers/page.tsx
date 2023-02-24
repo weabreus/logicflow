@@ -16,7 +16,7 @@ function page() {
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
   const [selectedPeople, setSelectedPeople] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState<any[]>([]);
 
   useEffect(() => {
     async function customers() {
@@ -37,9 +37,7 @@ function page() {
   }, [selectedPeople]);
 
   function toggleAll() {
-    {
-      /* @ts-ignore */
-    }
+    {/* @ts-ignore */}
     setSelectedPeople(checked || indeterminate ? [] : customers);
     setChecked(!checked && !indeterminate);
     setIndeterminate(false);
@@ -47,15 +45,31 @@ function page() {
 
   const [open, setOpen] = useState(false);
 
+  const handleDelete = async (customerId: string) => {
+    const response = await fetch(`/api/customers/${customerId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (response.ok) {
+      const customersList = await getCustomers();
+      // @ts-ignore
+      setCustomers(customersList);
+    }
+  };
+
   return (
     <>
-      <Form open={open} setOpen={setOpen} />
+      <Form
+        open={open}
+        setOpen={setOpen}
+        setCustomers={setCustomers}
+        getCustomers={getCustomers}
+      />
       <div className="py-4 px-4 sm:px-6 lg:px-8 w-full overflow-scroll">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
-            <h1 className="text-xl font-semibold text-gray-900">
-              Clientes
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-900">Clientes</h1>
             <p className="mt-2 text-sm text-gray-700">
               Una lista con todos los clientes en su cuenta.
             </p>
@@ -232,6 +246,13 @@ function page() {
                             Editar
                             <span className="sr-only">, {person.name}</span>
                           </a>
+                          <button
+                            onClick={() => handleDelete(person._id)}
+                            className="ml-2 text-indigo-600 hover:text-indigo-900"
+                          >
+                            borrar
+                            <span className="sr-only">, {person.name}</span>
+                          </button>
                         </td>
                       </tr>
                     ))}
