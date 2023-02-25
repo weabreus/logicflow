@@ -38,7 +38,7 @@ const Deliveries: React.FC<{
     } else if (activeTab === "Asignadas") {
       return data.data.filter(
         // @ts-ignore
-        (delivery) => delivery.assigned_status === true && delivery.task_status === false
+        (delivery) => delivery.assigned_status === true && delivery.status === false
       );
     } else if (activeTab === "Completadas") {
       // @ts-ignore

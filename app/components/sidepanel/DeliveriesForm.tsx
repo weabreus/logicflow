@@ -17,7 +17,7 @@ type Task = {
   };
   datetime?: Date | undefined;
   image?: string | undefined;
-  status?: boolean 
+  status?: "pending" | "in process" | "completed"
 };
 
 type Delivery = {
@@ -53,7 +53,7 @@ const DeliveriesForm: React.FC<{
       },
       datetime: undefined,
       image: "",
-      status: false
+      status: "pending"
     },
     delivery: {
       name: "",
@@ -67,7 +67,7 @@ const DeliveriesForm: React.FC<{
       },
       datetime: undefined,
       image: "",
-      status: false
+      status: "pending"
     },
   });
 

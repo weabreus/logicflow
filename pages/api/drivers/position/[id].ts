@@ -20,10 +20,44 @@ export default async function handler(
           { _id: new ObjectId(id) },
           {
             $set: {
-              coordinates: { ...bodyObject },
+              coordinates: { lat: bodyObject.lat, lng: bodyObject.lng },
             },
           }
         );
+
+        if (bodyObject.driverStatus === "busy") {
+          if (bodyObject.currentTask.type === "pickup") {
+            let task = await db.collection("deliveries").updateOne(
+              {
+                _id: new ObjectId(bodyObject.currentTask.id),
+              },
+              {
+                $push: {
+                  "pickup.locationHistory.route": {
+                    coordinates: { lat: bodyObject.lat, lng: bodyObject.lng },
+                    timestamp: bodyObject.timestamp
+                  },
+        
+                },
+              }
+            );
+          } else if (bodyObject.currentTask.type === "delivery") {
+            let task = await db.collection("deliveries").updateOne(
+              {
+                _id: new ObjectId(bodyObject.currentTask.id),
+              },
+              {
+                $push: {
+                  "delivery.locationHistory.route": {
+                    coordinates: { lat: bodyObject.lat, lng: bodyObject.lng },
+                    timestamp: bodyObject.timestamp,
+                  },
+                  
+                },
+              }
+            );
+          }
+        }
 
         res.json({
           status: 200,

@@ -39,6 +39,7 @@ export default async function handler(
       });
       break;
     case "GET":
+      console.log(req)
       const allDeliveries = await db.collection("deliveries").find({}).toArray();
       res.json({ status: 200, data: allDeliveries });
       break;

@@ -6,7 +6,7 @@ async function getDrivers(activeTab: string) {
   
     if (activeTab === "Disponibles") {
       // @ts-ignore
-      return data.data.filter((driver) => driver.status === "available") as any[];
+      return data.data.filter((driver) => driver.status === "active") as any[];
     } else if (activeTab === "Ocupados") {
       return data.data.filter(
         // @ts-ignore
