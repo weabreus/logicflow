@@ -20,11 +20,11 @@ export default async function handler(
           { _id: new ObjectId(bodyObject.taskId) },
           {
             $set: {
-              "delivery.status": "in process",
-              "delivery.locationHistory.start": {
+              "pickup.status": 'completed',
+              "pickup.locationHistory.end": {
                 coordinates: bodyObject.location,
-                timestamp: bodyObject.timestamp,
-              },
+                timestamp: bodyObject.timestamp
+              }
             },
           }
         );
@@ -36,7 +36,7 @@ export default async function handler(
       } catch (error) {
         res.json({
           status: 500,
-          message: "Couldn't update the delivery status.",
+          message: "Couldn't update the delivery.",
         });
       }
 

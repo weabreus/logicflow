@@ -32,7 +32,7 @@ const DriversList: React.FC<{
           setDrivers(driversList);
         }
         drivers();
-      }, [drivers, activeTab]);
+      }, [activeTab]);
   return (
     <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="Directory">
       <div className="relative">

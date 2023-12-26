@@ -13,7 +13,6 @@ export default async function handler(
   switch (req.method) {
     case "PATCH":
       let bodyObject = req.body;
-      console.log(bodyObject)
 
       try {
         let driver = await db.collection("drivers").updateOne(

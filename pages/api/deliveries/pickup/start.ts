@@ -20,14 +20,10 @@ export default async function handler(
           { _id: new ObjectId(bodyObject.taskId) },
           {
             $set: {
-              delivery: {
-                status: 'in process',
-                locationHistory: {
-                  start: {
-                    coordinates: bodyObject.location,
-                    timestamp: bodyObject.timestamp,
-                  },
-                },
+              "pickup.status": "in process",
+              "pickup.locationHistory.start": {
+                coordinates: bodyObject.location,
+                timestamp: bodyObject.timestamp,
               },
             },
           }
@@ -40,7 +36,7 @@ export default async function handler(
       } catch (error) {
         res.json({
           status: 500,
-          message: "Couldn't update the driver status.",
+          message: "Couldn't update the delivery status.",
         });
       }
 

@@ -27,7 +27,10 @@ export default async function handler(
   res: NextApiResponse<any>
 ) {
   const client = await clientPromise;
+  console.log(client);
   const db = client.db("logicflow");
+
+ 
 
   switch (req.method) {
     case "POST":    
@@ -39,7 +42,6 @@ export default async function handler(
       });
       break;
     case "GET":
-      console.log(req)
       const allDeliveries = await db.collection("deliveries").find({}).toArray();
       res.json({ status: 200, data: allDeliveries });
       break;

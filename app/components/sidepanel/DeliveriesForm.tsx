@@ -17,7 +17,7 @@ type Task = {
   };
   datetime?: Date | undefined;
   image?: string | undefined;
-  status?: "pending" | "in process" | "completed"
+  status?: "pending" | "in process" | "completed";
 };
 
 type Delivery = {
@@ -34,9 +34,7 @@ const DeliveriesForm: React.FC<{
   activeTab: string;
   getDeliveries: (activeTab: string) => Promise<any[]>;
   setDeliveries: React.Dispatch<React.SetStateAction<any[]>>;
-
 }> = ({ formOpen, setFormOpen, activeTab, getDeliveries, setDeliveries }) => {
-
   const [delivery, setDelivery] = useState<Delivery>({
     type: undefined,
     status: false,
@@ -53,7 +51,7 @@ const DeliveriesForm: React.FC<{
       },
       datetime: undefined,
       image: "",
-      status: "pending"
+      status: "pending",
     },
     delivery: {
       name: "",
@@ -67,7 +65,7 @@ const DeliveriesForm: React.FC<{
       },
       datetime: undefined,
       image: "",
-      status: "pending"
+      status: "pending",
     },
   });
 
@@ -109,7 +107,11 @@ const DeliveriesForm: React.FC<{
 
       setDelivery({
         ...delivery,
-        pickup: { ...delivery.pickup, coordinates: { lat: lat, lng: lng }, address: pickupAutocomplete?.getPlace().formatted_address },
+        pickup: {
+          ...delivery.pickup,
+          coordinates: { lat: lat, lng: lng },
+          address: pickupAutocomplete?.getPlace().formatted_address,
+        },
       });
     }
   };
@@ -126,28 +128,34 @@ const DeliveriesForm: React.FC<{
 
       setDelivery({
         ...delivery,
-        delivery: { ...delivery.delivery, coordinates: { lat: lat, lng: lng }, address: deliveryAutocomplete?.getPlace().formatted_address },
+        delivery: {
+          ...delivery.delivery,
+          coordinates: { lat: lat, lng: lng },
+          address: deliveryAutocomplete?.getPlace().formatted_address,
+        },
       });
     }
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    try {
+      // Send a POST request to the API route
+      const response = await fetch("/api/deliveries/deliveries/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(delivery),
+      });
 
-    // Send a POST request to the API route
-    const response = await fetch("/api/deliveries/deliveries/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(delivery),
-    });
+      if (response.ok) {
+        setFormOpen(false);
 
-    if (response.ok) {
-      setFormOpen(false);
-      
-      const deliveriesList = await getDeliveries(activeTab);
+        const deliveriesList = await getDeliveries(activeTab);
 
-      setDeliveries(deliveriesList)
-
+        setDeliveries(deliveriesList);
+      }
+    } catch (error) {
+      console.log(error)
     }
   };
 

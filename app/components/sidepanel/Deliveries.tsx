@@ -44,7 +44,7 @@ const Deliveries: React.FC<{
       // @ts-ignore
       return data.data.filter(
         // @ts-ignore
-        (delivery) => delivery.assigned_status === true && delivery.task_status === true
+        (delivery) => delivery.assigned_status === true && delivery.status === true
       );
     }
   }

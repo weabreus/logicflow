@@ -20,6 +20,7 @@ export default async function handler(
           { _id: new ObjectId(bodyObject.taskId) },
           {
             $set: {
+              status: true,
               "delivery.status": 'completed',
               "delivery.locationHistory.end": {
                 coordinates: bodyObject.location,
@@ -36,7 +37,7 @@ export default async function handler(
       } catch (error) {
         res.json({
           status: 500,
-          message: "Couldn't update the driver status.",
+          message: "Couldn't update the delivery status.",
         });
       }
 
